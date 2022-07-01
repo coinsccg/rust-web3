@@ -54,8 +54,8 @@ impl Client {
         ZERO_ADDRESS.parse().unwrap()
     }
 
-    pub async fn contract_call(&self, path: &str, from: &str, contract_addr: &str, func_name: &str, param: &str) -> CallResult<H256> {
-        let contract = Contract::from_json(self.client.eth(), contract_addr.parse().unwrap(), Self::load_contract(path).unwrap().as_bytes())?;
+    pub async fn contract_call(&self, _path: &str, from: &str, contract_addr: &str, func_name: &str, param: &str) -> CallResult<H256> {
+        let contract = Contract::from_json(self.client.eth(), contract_addr.parse().unwrap(), include_bytes!("json/usdt.abi"))?;
         let mut options = Options::default();
         options.gas = Some(U256::from(100000u64));
         let hash = contract.call(func_name, param.to_string().into_token(), from.parse().unwrap(), options).await?;

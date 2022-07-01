@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 web3 = { version = "0.18.0", features = ["default"]}
+ethereum-types = "0.13.1"
