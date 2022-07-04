@@ -25,16 +25,16 @@ async fn main() -> web3::Result<()> {
     }
 
     // 调用合约函数
-    match client.contract_sign_call(
-        "./src/json/usdt.json", 
-        priv_key, 
-        contract, 
-        "transfer", 
-        ("0x337610d27c682E347C9cD60BD4b3b107C9d34dDd", 1_000_000_000_000_000_000)
-    ).await {
-        Ok(hash) => println!("{:?}", hash),
-        Err(err) => println!("{:?}", err)
-    }
+    // match client.contract_sign_call(
+    //     "./src/json/usdt.json", 
+    //     priv_key, 
+    //     contract, 
+    //     "transfer", 
+    //     ("0x337610d27c682E347C9cD60BD4b3b107C9d34dDd", 1_000_000_000_000_000_000)
+    // ).await {
+    //     Ok(hash) => println!("{:?}", hash),
+    //     Err(err) => println!("{:?}", err)
+    // }
 
     // 转账ETH
     // let to = "0xd3dE9c47b917baAd93F68B2c0D6dEe857D20b015";
@@ -42,7 +42,7 @@ async fn main() -> web3::Result<()> {
     // println!("{:?}", hash);
 
     // 部署合约
-    // let balance = client.deploy(from, priv_key).await.unwrap();
-    // println!("{}", balance);
+    let balance = client.deploy(from, priv_key).await.unwrap();
+    println!("{}", balance);
     Ok(())
 }

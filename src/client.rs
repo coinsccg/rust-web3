@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(unused_must_use)]
+
 use hex_literal::hex;
+use std::{cmp::Ordering, ops::Add};
 use std::fs::File;
 use std::io::prelude::*;
 use std::str::FromStr; // 当自定义类型实现FromStr时，通常采用parse进行解析，如果采用from_str会报FromStr不在作用域范围，因此需要导入
@@ -112,13 +114,13 @@ impl Client {
         let account: Address = account.parse().unwrap();
         let private_key = SecretKey::from_str(priv_key).unwrap();
         let private_key_ref = SecretKeyRef::new(&private_key);
+        let gas_price = self.client.eth().gas_price().await.unwrap();
         let contract = Contract::deploy(self.client.eth(), abi)?
         .confirmations(5)
-        // .options(Options::with(|opt|{
-            // opt.value = Some(5.into());
-            // opt.gas_price = Some(5.into());
-            // opt.gas = Some(3_000_000.into());
-        // }))
+        .options(Options::with(move |opt|{
+            opt.gas_price = Some(gas_price);
+            opt.gas = Some(3_000_000.into());
+        }))
         .sign_with_key_and_execute(
             bytecode, 
             (U256::from(1_000_000_u64), "My Token Coin".to_owned(), 3u64, "MTC".to_owned()), 
@@ -131,15 +133,33 @@ impl Client {
     }
 
     pub async fn loop_block(&self) -> Result<()>{
-        let last_block_num = self.client.eth().block_number().await.unwrap();
-        println!("last block number: {}", last_block_num);
-        if let Some(block) = self.client.eth().block(BlockId::Number(last_block_num.into())).await? {
-            for (_index, hash) in block.transactions.iter().enumerate() {
-                if let Some(tx) = self.client.eth().transaction(TransactionId::Hash(*hash)).await? {
-                    let from = tx.from.unwrap().to_string().as_str();
-                    println!("from: {} to: {} value: {} tx: {}", from,  tx.to.unwrap(), tx.value, tx.hash);
+        // read file or read db
+        let mut current_block_num = U64::from(6i32);
+        loop {
+            let last_block_num = self.client.eth().block_number().await.unwrap();
+
+            match last_block_num.cmp(&current_block_num) {
+                Ordering::Less | Ordering::Equal => {
+                    if let Some(block) = self.client.eth().block(BlockId::Number(last_block_num.into())).await? {
+                        for (_index, hash) in block.transactions.iter().enumerate() {
+                            if let Some(tx) = self.client.eth().transaction(TransactionId::Hash(*hash)).await? {
+                                let _from = tx.from.unwrap().to_string();
+                                let _to = tx.to.unwrap().to_string();
+                                let _value = tx.value;
+                                let _contract: Address;
+                                if let Some(tx) = self.client.eth().transaction_receipt(*hash).await? {
+                                    _contract = tx.contract_address.unwrap();
+                                }
+                                // todo logic
+                                current_block_num = current_block_num.add(U64::from(1u8));
+                            }
+                            
+                        }
+                    }
                 }
+                _ => {}
             }
+            
         }
         Ok(())
     }
