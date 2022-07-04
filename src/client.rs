@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-use std::fs::File;
+use std::{fs::File, str::FromStr};
 use std::io::prelude::*;
 use web3::{
     self,
@@ -54,8 +54,9 @@ impl Client {
         ZERO_ADDRESS.parse().unwrap()
     }
 
-    pub async fn contract_call(&self, _path: &str, from: &str, contract_addr: &str, func_name: &str, param: &str) -> CallResult<H256> {
-        let contract = Contract::from_json(self.client.eth(), contract_addr.parse().unwrap(), include_bytes!("json/usdt.abi"))?;
+    pub async fn contract_call(&self, path: &str, from: &str, contract_addr: &str, func_name: &str, param: &str) -> CallResult<H256> {
+        // let contract = Contract::from_json(self.client.eth(), contract_addr.parse().unwrap(), include_bytes!("json/usdt.abi"))?;
+        let contract = Contract::from_json(self.client.eth(), contract_addr.parse().unwrap(), H256::from_str(Self::load_contract(path).unwrap().as_str()).unwrap().as_bytes())?;
         let mut options = Options::default();
         options.gas = Some(U256::from(100000u64));
         let hash = contract.call(func_name, param.to_string().into_token(), from.parse().unwrap(), options).await?;

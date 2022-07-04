@@ -13,7 +13,7 @@ async fn main() -> web3::Result<()> {
     let func_name = "balanceOf";
     let param = "0x7cD1CB03FAE64CBab525C3263DBeB821Afd64483";
     println!("{:?}", balance);
-    match client.contract_call("src/json/usdt.abi", from, contract, func_name, param).await {
+    match client.contract_call("src/json/usdt.json", from, contract, func_name, param).await {
         Ok(hash) => println!("{:?}", hash),
         Err(err) => println!("{:?}", err)
     }
